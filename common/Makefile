@@ -2,7 +2,7 @@ PROTO_DIR=proto
 OUT_DIR=proto-gen
 PROTO_FILES=$(wildcard $(PROTO_DIR)/*.proto)
 
-generate:
+gen:
 	protoc \
 		--proto_path=$(PROTO_DIR) \
 		--go_out=$(OUT_DIR) \
@@ -14,4 +14,4 @@ generate:
 clean:
 	rm -rf $(OUT_DIR)/*.pb.go
 
-.PHONY: generate clean
+.PHONY: gen clean
