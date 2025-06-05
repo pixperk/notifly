@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/pixperk/notifly/user/auth"
 	db "github.com/pixperk/notifly/user/db/sqlc"
 	"github.com/pixperk/notifly/user/util"
@@ -34,7 +36,12 @@ type userService struct {
 
 func NewService(store Store, config *Config) (Service, error) {
 
-	tokenMaker, err := auth.NewPasetoMaker(config.TokenSymmetricKey)
+	byteSymmetricKey := []byte(config.TokenSymmetricKey)
+	if len(byteSymmetricKey) == 0 {
+		return nil, errors.New("token symmetric key is not set")
+	}
+
+	tokenMaker, err := auth.NewPasetoMaker(byteSymmetricKey)
 	if err != nil {
 		return nil, err
 	}

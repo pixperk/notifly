@@ -23,7 +23,7 @@ migrate-drop:
 	$(MIGRATE) drop -f
 
 run:
-	go run cmd/server.go
+	go run cmd/user/main.go
 
 
 .PHONY: sqlc migrate-create migrate-up migrate-down migrate-drop run
