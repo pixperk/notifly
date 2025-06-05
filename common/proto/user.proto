@@ -1,0 +1,35 @@
+syntax="proto3";
+package common.user;
+
+option go_package = "github.com/pixperk/notifly/common/gen;commonpb";
+
+service UserService {
+    rpc SignUp(SignUpRequest) returns (AuthResponse);
+    rpc SignIn(SignInRequest) returns (AuthResponse);
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message SignUpRequest {
+    string name = 1;
+    string identifier = 2;
+    string password = 3;
+}
+
+message SignInRequest{
+    string identifier = 1;
+    string password = 2;
+}
+
+message AuthResponse {
+    string identifier = 1;
+    string token = 2;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    string identifier = 1;
+    string user_id = 2;
+}
