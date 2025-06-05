@@ -8,12 +8,20 @@ import (
 	"github.com/pixperk/notifly/common"
 )
 
-func publishNotif(nc *nats.Conn, event common.NotificationEvent) error {
+func PublishNotif( /* ctx context.Context */ nc *nats.Conn, event common.NotificationEvent) error {
+	//use context
+
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
 
 	subject := fmt.Sprintf("notifications.%s", event.Type)
-	return nc.Publish(subject, data)
+
+	msg := &nats.Msg{
+		Subject: subject,
+		Data:    data,
+	}
+
+	return nc.PublishMsg(msg)
 }
