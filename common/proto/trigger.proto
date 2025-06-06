@@ -1,0 +1,37 @@
+syntax = "proto3";
+package common.trigger;
+
+option go_package = "github.com/pixperk/notifly/common/gen;commonpb";
+
+service TriggerService {
+  rpc TriggerNotification(NotificationRequest) returns (TriggerResponse);
+}
+
+message NotificationRequest {
+  enum NotificationType {
+    NOTIFICATION_TYPE_UNSPECIFIED = 0;
+    EMAIL = 1;
+    SMS = 2;
+    PUSH = 3;
+  }
+
+  NotificationType type = 1;
+  string recipient = 2;
+  string subject = 3;
+  string body = 4;
+  string trigger_by = 5;
+}
+
+message TriggerResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+    QUEUED = 3;
+  }
+
+  Status status = 1;
+  string message = 2;
+  string notification_id = 3;
+  string trigger_by = 4;
+}
