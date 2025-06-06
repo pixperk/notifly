@@ -131,7 +131,6 @@ type NotificationRequest struct {
 	Recipient     string                               `protobuf:"bytes,2,opt,name=recipient,proto3" json:"recipient,omitempty"`
 	Subject       string                               `protobuf:"bytes,3,opt,name=subject,proto3" json:"subject,omitempty"`
 	Body          string                               `protobuf:"bytes,4,opt,name=body,proto3" json:"body,omitempty"`
-	TriggerBy     string                               `protobuf:"bytes,5,opt,name=trigger_by,json=triggerBy,proto3" json:"trigger_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -190,13 +189,6 @@ func (x *NotificationRequest) GetSubject() string {
 func (x *NotificationRequest) GetBody() string {
 	if x != nil {
 		return x.Body
-	}
-	return ""
-}
-
-func (x *NotificationRequest) GetTriggerBy() string {
-	if x != nil {
-		return x.TriggerBy
 	}
 	return ""
 }
@@ -273,14 +265,12 @@ var File_trigger_proto protoreflect.FileDescriptor
 
 const file_trigger_proto_rawDesc = "" +
 	"\n" +
-	"\rtrigger.proto\x12\x0ecommon.trigger\"\x9f\x02\n" +
+	"\rtrigger.proto\x12\x0ecommon.trigger\"\x80\x02\n" +
 	"\x13NotificationRequest\x12H\n" +
 	"\x04type\x18\x01 \x01(\x0e24.common.trigger.NotificationRequest.NotificationTypeR\x04type\x12\x1c\n" +
 	"\trecipient\x18\x02 \x01(\tR\trecipient\x12\x18\n" +
 	"\asubject\x18\x03 \x01(\tR\asubject\x12\x12\n" +
-	"\x04body\x18\x04 \x01(\tR\x04body\x12\x1d\n" +
-	"\n" +
-	"trigger_by\x18\x05 \x01(\tR\ttriggerBy\"S\n" +
+	"\x04body\x18\x04 \x01(\tR\x04body\"S\n" +
 	"\x10NotificationType\x12!\n" +
 	"\x1dNOTIFICATION_TYPE_UNSPECIFIED\x10\x00\x12\t\n" +
 	"\x05EMAIL\x10\x01\x12\a\n" +

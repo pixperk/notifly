@@ -19,7 +19,6 @@ message NotificationRequest {
   string recipient = 2;
   string subject = 3;
   string body = 4;
-  string trigger_by = 5;
 }
 
 message TriggerResponse {
