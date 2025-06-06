@@ -5,6 +5,7 @@ import (
 
 	"github.com/pixperk/notifly/common"
 	"github.com/pixperk/notifly/graphql/models"
+	"github.com/pixperk/notifly/graphql/util"
 )
 
 type mutationResolver struct {
@@ -17,7 +18,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, input models.SignUpInput)
 		return nil, err
 	}
 
-	//set token in header for future requests
+	r.server.token = authResp.Token
 
 	return &models.AuthResp{
 		Authenticated: true,
@@ -31,7 +32,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, input models.SignInInput)
 		return nil, err
 	}
 
-	//set token in header for future requests
+	r.server.token = authResp.Token
 
 	return &models.AuthResp{
 		Authenticated: true,
@@ -66,7 +67,9 @@ func (r *mutationResolver) TriggerNotification(ctx context.Context, input models
 		Body:      input.Body,
 	}
 
-	resp, err := r.server.triggerClient.TriggerNotification(ctx, event)
+	ctxWithToken := util.WithToken(ctx, r.server.token)
+
+	resp, err := r.server.triggerClient.TriggerNotification(ctxWithToken, event)
 	if err != nil {
 		return nil, err
 	}

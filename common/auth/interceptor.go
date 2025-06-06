@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -12,7 +11,6 @@ import (
 
 const (
 	AuthMetadataKey = "authorization"
-	TokenPrefix     = "Bearer "
 )
 
 type contextKey string
@@ -26,12 +24,13 @@ func AuthUnaryInterceptor(tokenMaker TokenMaker) grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, "missing metadata")
 		}
 
-		authHeader := md[AuthMetadataKey]
-		if len(authHeader) == 0 {
+		tokenArray := md[AuthMetadataKey]
+
+		if len(tokenArray) == 0 {
 			return nil, status.Errorf(codes.Unauthenticated, "missing auth token")
 		}
 
-		token := strings.TrimPrefix(authHeader[0], TokenPrefix)
+		token := tokenArray[0]
 
 		payload, err := tokenMaker.VerifyToken(token)
 		if err != nil {
