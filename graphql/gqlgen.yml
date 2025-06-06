@@ -1,0 +1,27 @@
+# gqlgen.yml
+
+# Your GraphQL schema file(s)
+schema:
+  - schema.graphql
+
+# Where the generated resolvers go
+resolver:
+  layout: follow-schema
+  dir: resolvers
+  package: resolvers
+
+# Where to generate exec code (i.e., internal gql logic)
+exec:
+  filename: generated/generated.go
+  package: generated
+
+# Where to generate models (structs from your schema)
+model:
+  filename: models/models_gen.go
+  package: models
+
+# No manual model bindings, let gqlgen auto-generate everything
+models: {}
+
+# No auto-binding to existing Go code
+autobind: []

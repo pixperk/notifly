@@ -1,0 +1,51 @@
+type AuthResp{
+    authenticated: Boolean!
+    identifier: String!
+}
+
+type ValidateTokenResp{
+    userId: String!
+    identifier: String!
+}
+
+enum NotificationType {
+    EMAIL
+    SMS
+    PUSH
+}
+
+type TriggerNotificationResp {
+    notificationId: String!
+    status: String!
+    message: String!
+    triggerBy: String!
+}
+
+input SignUpInput {
+    name: String!
+    identifier: String!
+    password: String!
+}
+
+input SignInInput {
+    identifier: String!
+    password: String!
+}
+
+input ValidateTokenInput {
+    token: String!
+}
+
+input NotificationInput {
+  type: NotificationType!
+  recipient: String!
+  subject: String
+  body: String!
+}
+
+type Mutation {
+    signUp(input: SignUpInput!): AuthResp!
+    signIn(input: SignInInput!): AuthResp!
+    validateToken(input: ValidateTokenInput!): ValidateTokenResp!
+    triggerNotification(input: NotificationInput!): TriggerNotificationResp!
+}

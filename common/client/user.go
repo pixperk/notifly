@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pixperk/notifly/common/auth"
 	commonpb "github.com/pixperk/notifly/common/proto-gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 )
 
 type UserClient struct {
@@ -19,6 +17,7 @@ type UserClient struct {
 type AuthResp struct {
 	Authenticated bool   `json:"authenticated"`
 	Identifier    string `json:"identifier"`
+	Token         string `json:"token,omitempty"`
 }
 
 type ValidateTokenResp struct {
@@ -56,11 +55,12 @@ func (c *UserClient) SignUp(ctx context.Context, name, identifier, password stri
 
 	token := resp.Token
 	// Create a new context with the auth token
-	_ = metadata.AppendToOutgoingContext(ctx, auth.AuthMetadataKey, fmt.Sprintf("%s %s", auth.TokenPrefix, token))
+	//_ = metadata.AppendToOutgoingContext(ctx, auth.AuthMetadataKey, fmt.Sprintf("%s %s", auth.TokenPrefix, token))
 
 	return &AuthResp{
 		Authenticated: true,
 		Identifier:    identifier,
+		Token:         token,
 	}, nil
 }
 
@@ -77,11 +77,12 @@ func (c *UserClient) SignIn(ctx context.Context, identifier, password string) (*
 
 	token := resp.Token
 	// Create a new context with the auth token
-	_ = metadata.AppendToOutgoingContext(ctx, auth.AuthMetadataKey, fmt.Sprintf("%s %s", auth.TokenPrefix, token))
+	//_ = metadata.AppendToOutgoingContext(ctx, auth.AuthMetadataKey, fmt.Sprintf("%s %s", auth.TokenPrefix, token))
 
 	return &AuthResp{
 		Authenticated: true,
 		Identifier:    identifier,
+		Token:         token,
 	}, nil
 }
 
