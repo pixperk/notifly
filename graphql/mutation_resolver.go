@@ -2,8 +2,10 @@ package graphql
 
 import (
 	"context"
+	"errors"
 
 	"github.com/pixperk/notifly/common"
+	"github.com/pixperk/notifly/graphql/middleware"
 	"github.com/pixperk/notifly/graphql/models"
 	"github.com/pixperk/notifly/graphql/util"
 )
@@ -18,7 +20,12 @@ func (r *mutationResolver) SignUp(ctx context.Context, input models.SignUpInput)
 		return nil, err
 	}
 
-	r.server.token = authResp.Token
+	//Add token to cookie with 2 hours max age
+	maxAge := 2 * 60 * 60
+	w := middleware.GetResponseWriter(ctx)
+	if w != nil {
+		util.SetCookie(w, string(middleware.AuthTokenKey), authResp.Token, maxAge)
+	}
 
 	return &models.AuthResp{
 		Authenticated: true,
@@ -32,7 +39,12 @@ func (r *mutationResolver) SignIn(ctx context.Context, input models.SignInInput)
 		return nil, err
 	}
 
-	r.server.token = authResp.Token
+	//Add token to cookie with 2 hours max age
+	maxAge := 2 * 60 * 60
+	w := middleware.GetResponseWriter(ctx)
+	if w != nil {
+		util.SetCookie(w, string(middleware.AuthTokenKey), authResp.Token, maxAge)
+	}
 
 	return &models.AuthResp{
 		Authenticated: true,
@@ -67,7 +79,12 @@ func (r *mutationResolver) TriggerNotification(ctx context.Context, input models
 		Body:      input.Body,
 	}
 
-	ctxWithToken := util.WithToken(ctx, r.server.token)
+	token, ok := ctx.Value(middleware.AuthTokenKey).(string)
+	if !ok {
+		return nil, errors.New("unauthorized: token missing")
+	}
+
+	ctxWithToken := util.WithToken(ctx, token)
 
 	resp, err := r.server.triggerClient.TriggerNotification(ctxWithToken, event)
 	if err != nil {

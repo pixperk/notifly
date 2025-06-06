@@ -9,7 +9,6 @@ import (
 type GraphQLServer struct {
 	userClient    *client.UserClient
 	triggerClient *client.TriggerClient
-	token         string
 }
 
 func NewGraphQLServer(userUrl, accountUrl string) (*GraphQLServer, error) {
