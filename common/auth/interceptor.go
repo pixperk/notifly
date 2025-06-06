@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	authMetadataKey = "authorization"
-	tokenPrefix     = "Bearer "
+	AuthMetadataKey = "authorization"
+	TokenPrefix     = "Bearer "
 )
 
 type contextKey string
@@ -26,12 +26,12 @@ func AuthUnaryInterceptor(tokenMaker TokenMaker) grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, "missing metadata")
 		}
 
-		authHeader := md[authMetadataKey]
+		authHeader := md[AuthMetadataKey]
 		if len(authHeader) == 0 {
 			return nil, status.Errorf(codes.Unauthenticated, "missing auth token")
 		}
 
-		token := strings.TrimPrefix(authHeader[0], tokenPrefix)
+		token := strings.TrimPrefix(authHeader[0], TokenPrefix)
 
 		payload, err := tokenMaker.VerifyToken(token)
 		if err != nil {
