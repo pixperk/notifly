@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	TriggerNotification(event common.NotificationEvent) error
+	TriggerNotification(event common.NotificationEvent) (string, error)
 }
 
 type triggerService struct {
@@ -20,6 +20,6 @@ func NewService(nc *nats.Conn) Service {
 	}
 }
 
-func (s *triggerService) TriggerNotification(event common.NotificationEvent) error {
+func (s *triggerService) TriggerNotification(event common.NotificationEvent) (string, error) {
 	return util.PublishNotif(s.nc, event)
 }

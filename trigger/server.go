@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/pixperk/notifly/common"
+	"github.com/pixperk/notifly/common/auth"
 	commonpb "github.com/pixperk/notifly/common/proto-gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -16,24 +17,36 @@ type grpcServer struct {
 	commonpb.UnimplementedTriggerServiceServer
 }
 
-func ListenGRPC(s Service, port int) error {
+func ListenGRPC(s Service, port int, tokenMaker auth.TokenMaker) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(auth.AuthUnaryInterceptor(tokenMaker)))
 	commonpb.RegisterTriggerServiceServer(server, &grpcServer{service: s})
 	reflection.Register(server)
 	return server.Serve(lis)
 }
 
 func (s *grpcServer) Trigger(ctx context.Context, req *commonpb.NotificationRequest) (*commonpb.TriggerResponse, error) {
+
+	authPayload := ctx.Value("auth_payload").(*auth.Payload)
 	event := common.NotificationEvent{
-		Type: req.Type.Enum().String(),
+		Type:      req.Type.Enum().String(),
+		Recipient: req.Recipient,
+		Subject:   req.Subject,
+		Body:      req.Body,
+		TriggerBy: authPayload.Identifier,
 	}
-	resp, err := s.service.TriggerNotification(ctx, req)
+	notificationId, err := s.service.TriggerNotification(event)
 	if err != nil {
 		return nil, fmt.Errorf("failed to trigger notification: %w", err)
 	}
-	return resp, nil
+	return &commonpb.TriggerResponse{
+		Status:         commonpb.TriggerResponse_QUEUED,
+		Message:        "Notification being sent",
+		TriggerBy:      authPayload.Identifier,
+		NotificationId: notificationId,
+	}, nil
 }

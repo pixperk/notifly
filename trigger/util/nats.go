@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/pixperk/notifly/common"
 )
 
-func PublishNotif( /* ctx context.Context */ nc *nats.Conn, event common.NotificationEvent) error {
-	//use context
+func PublishNotif(nc *nats.Conn, event common.NotificationEvent) (string, error) {
+
+	notifID := uuid.New().String()
 
 	data, err := json.Marshal(event)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	subject := fmt.Sprintf("notifications.%s", event.Type)
@@ -23,5 +25,6 @@ func PublishNotif( /* ctx context.Context */ nc *nats.Conn, event common.Notific
 		Data:    data,
 	}
 
-	return nc.PublishMsg(msg)
+	err = nc.PublishMsg(msg)
+	return notifID, err
 }
