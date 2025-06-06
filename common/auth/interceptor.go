@@ -43,3 +43,11 @@ func AuthUnaryInterceptor(tokenMaker TokenMaker) grpc.UnaryServerInterceptor {
 
 	}
 }
+
+func GetAuthPayload(ctx context.Context) (*Payload, error) {
+	payload, ok := ctx.Value(authPayloadKey).(*Payload)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "auth payload not found in context")
+	}
+	return payload, nil
+}

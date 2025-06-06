@@ -5,9 +5,11 @@ import (
 )
 
 type Config struct {
-	NatsURL       string `mapstructure:"NATS_URL"`
-	NatsClusterID string `mapstructure:"NATS_CLUSTER_ID"`
-	NatsClientID  string `mapstructure:"NATS_CLIENT_ID"`
+	NatsURL           string `mapstructure:"NATS_URL"`
+	NatsClusterID     string `mapstructure:"NATS_CLUSTER_ID"`
+	NatsClientID      string `mapstructure:"NATS_CLIENT_ID"`
+	Port              int    `mapstructure:"PORT"`
+	TokenSymmetricKey string `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

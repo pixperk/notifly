@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/pixperk/notifly/user/auth"
+	"github.com/pixperk/notifly/common/auth"
 	db "github.com/pixperk/notifly/user/db/sqlc"
 	"github.com/pixperk/notifly/user/util"
 )

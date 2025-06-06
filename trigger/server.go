@@ -29,9 +29,12 @@ func ListenGRPC(s Service, port int, tokenMaker auth.TokenMaker) error {
 	return server.Serve(lis)
 }
 
-func (s *grpcServer) Trigger(ctx context.Context, req *commonpb.NotificationRequest) (*commonpb.TriggerResponse, error) {
+func (s *grpcServer) TriggerNotification(ctx context.Context, req *commonpb.NotificationRequest) (*commonpb.TriggerResponse, error) {
 
-	authPayload := ctx.Value("auth_payload").(*auth.Payload)
+	authPayload, err := auth.GetAuthPayload(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get auth payload: %w", err)
+	}
 	event := common.NotificationEvent{
 		Type:      req.Type.Enum().String(),
 		Recipient: req.Recipient,
