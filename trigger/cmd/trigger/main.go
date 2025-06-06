@@ -26,6 +26,8 @@ func main() {
 
 	service := trigger.NewService(nc)
 
+	log.Printf("Trigger service is starting on port %d", cfg.Port)
+
 	if err := trigger.ListenGRPC(service, cfg.Port, tokenMaker); err != nil {
 		log.Fatalf("Cannot start gRPC server: %v", err)
 	}
