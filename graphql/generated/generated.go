@@ -39,6 +39,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
+	Query() QueryResolver
 }
 
 type DirectiveRoot struct {
@@ -58,6 +59,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		HealthCheck func(childComplexity int) int
 	}
 
 	TriggerNotificationResp struct {
@@ -78,6 +80,9 @@ type MutationResolver interface {
 	SignIn(ctx context.Context, input models.SignInInput) (*models.AuthResp, error)
 	ValidateToken(ctx context.Context, input models.ValidateTokenInput) (*models.ValidateTokenResp, error)
 	TriggerNotification(ctx context.Context, input models.NotificationInput) (*models.TriggerNotificationResp, error)
+}
+type QueryResolver interface {
+	HealthCheck(ctx context.Context) (string, error)
 }
 
 type executableSchema struct {
@@ -160,6 +165,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.ValidateToken(childComplexity, args["input"].(models.ValidateTokenInput)), true
+
+	case "Query.healthCheck":
+		if e.complexity.Query.HealthCheck == nil {
+			break
+		}
+
+		return e.complexity.Query.HealthCheck(childComplexity), true
 
 	case "TriggerNotificationResp.message":
 		if e.complexity.TriggerNotificationResp.Message == nil {
@@ -362,6 +374,10 @@ type Mutation {
     signIn(input: SignInInput!): AuthResp!
     validateToken(input: ValidateTokenInput!): ValidateTokenResp!
     triggerNotification(input: NotificationInput!): TriggerNotificationResp!
+}
+
+type Query {
+    healthCheck: String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -962,6 +978,50 @@ func (ec *executionContext) fieldContext_Mutation_triggerNotification(ctx contex
 	if fc.Args, err = ec.field_Mutation_triggerNotification_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_healthCheck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_healthCheck(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().HealthCheck(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_healthCheck(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -3603,6 +3663,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "healthCheck":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_healthCheck(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)

@@ -49,3 +49,7 @@ type Mutation {
     validateToken(input: ValidateTokenInput!): ValidateTokenResp!
     triggerNotification(input: NotificationInput!): TriggerNotificationResp!
 }
+
+type Query {
+    healthCheck: String!
+}

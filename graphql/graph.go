@@ -1,4 +1,4 @@
-package main
+package graphql
 
 import (
 	"github.com/99designs/gqlgen/graphql"
@@ -30,6 +30,10 @@ func NewGraphQLServer(userUrl, accountUrl string) (*GraphQLServer, error) {
 
 func (s *GraphQLServer) Mutation() generated.MutationResolver {
 	return &mutationResolver{server: s}
+}
+
+func (s *GraphQLServer) Query() generated.QueryResolver {
+	return &queryResolver{server: s}
 }
 
 func (s *GraphQLServer) ToExecutableSchema() graphql.ExecutableSchema {

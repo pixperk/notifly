@@ -32,7 +32,16 @@ func (r *mutationResolver) TriggerNotification(ctx context.Context, input models
 	panic(fmt.Errorf("not implemented: TriggerNotification - triggerNotification"))
 }
 
+// HealthCheck is the resolver for the healthCheck field.
+func (r *queryResolver) HealthCheck(ctx context.Context) (string, error) {
+	panic(fmt.Errorf("not implemented: HealthCheck - healthCheck"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
 type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

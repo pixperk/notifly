@@ -1,19 +1,11 @@
 # Variables
-GQLGEN = $(shell go env GOPATH)/bin/gqlgen
+GQLGEN = go run github.com/99designs/gqlgen
 GO = go
-SERVER = main.go
+SERVER = cmd/graphql/main.go
 
-.PHONY: all install init generate run clean
+.PHONY: generate run 
 
-all: install generate run
 
-install:
-	@echo "Installing gqlgen CLI..."
-	$(GO) install github.com/99designs/gqlgen@latest
-
-init:
-	@echo "Initializing gqlgen schema and config..."
-	$(GQLGEN) init
 
 generate:
 	@echo "Generating Go code from GraphQL schema..."
@@ -21,3 +13,4 @@ generate:
 
 run:
 	$(GO) run $(SERVER)
+
