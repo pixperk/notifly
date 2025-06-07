@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/google/uuid"
 	"github.com/pixperk/notifly/common"
 	"github.com/pixperk/notifly/common/auth"
 	commonpb "github.com/pixperk/notifly/common/proto-gen"
@@ -35,14 +36,18 @@ func (s *grpcServer) TriggerNotification(ctx context.Context, req *commonpb.Noti
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auth payload: %w", err)
 	}
+
+	notificationId := uuid.New()
+
 	event := common.NotificationEvent{
-		Type:      req.Type.Enum().String(),
-		Recipient: req.Recipient,
-		Subject:   req.Subject,
-		Body:      req.Body,
-		TriggerBy: authPayload.Identifier,
+		NotificationId: notificationId,
+		Type:           req.Type.Enum().String(),
+		Recipient:      req.Recipient,
+		Subject:        req.Subject,
+		Body:           req.Body,
+		TriggerBy:      authPayload.Identifier,
 	}
-	notificationId, err := s.service.TriggerNotification(event)
+	err = s.service.TriggerNotification(event)
 	if err != nil {
 		return nil, fmt.Errorf("failed to trigger notification: %w", err)
 	}
@@ -50,6 +55,6 @@ func (s *grpcServer) TriggerNotification(ctx context.Context, req *commonpb.Noti
 		Status:         commonpb.TriggerResponse_QUEUED,
 		Message:        "Notification being sent",
 		TriggerBy:      authPayload.Identifier,
-		NotificationId: notificationId,
+		NotificationId: notificationId.String(),
 	}, nil
 }
