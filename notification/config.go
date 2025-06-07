@@ -11,6 +11,8 @@ type Config struct {
 	TwilioAuthToken   string `mapstructure:"TWILIO_AUTH_TOKEN"`
 	TwilioAccountSID  string `mapstructure:"TWILIO_ACCOUNT_SID"`
 	TwilioPhoneNumber string `mapstructure:"TWILIO_PHONE_NUMBER"`
+	BrevoAPIKey       string `mapstructure:"BREVO_API_KEY"`
+	FromAddress       string `mapstructure:"FROM_ADDRESS"`
 	Port              int    `mapstructure:"PORT"`
 }
 

@@ -15,9 +15,7 @@ type EmailDispatcher struct {
 }
 
 func (d *EmailDispatcher) Send(event common.NotificationEvent) error {
-	// Implement email sending logic here
-	// For example, use an SMTP client to send the email
-	return nil
+	return util.SendEmail(event, d.cfg)
 }
 
 type SMSDispatcher struct {
