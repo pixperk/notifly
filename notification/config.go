@@ -5,10 +5,13 @@ import (
 )
 
 type Config struct {
-	NatsURL       string `mapstructure:"NATS_URL"`
-	NatsClusterID string `mapstructure:"NATS_CLUSTER_ID"`
-	NatsClientID  string `mapstructure:"NATS_CLIENT_ID"`
-	Port          int    `mapstructure:"PORT"`
+	NatsURL           string `mapstructure:"NATS_URL"`
+	NatsClusterID     string `mapstructure:"NATS_CLUSTER_ID"`
+	NatsClientID      string `mapstructure:"NATS_CLIENT_ID"`
+	TwilioAuthToken   string `mapstructure:"TWILIO_AUTH_TOKEN"`
+	TwilioAccountSID  string `mapstructure:"TWILIO_ACCOUNT_SID"`
+	TwilioPhoneNumber string `mapstructure:"TWILIO_PHONE_NUMBER"`
+	Port              int    `mapstructure:"PORT"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

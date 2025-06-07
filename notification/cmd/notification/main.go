@@ -31,7 +31,7 @@ func main() {
 	}
 
 	log.Printf("Started...")
-	util.StartWorkerPool(queue, 5)
+	util.StartWorkerPool(queue, 5, cfg)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)

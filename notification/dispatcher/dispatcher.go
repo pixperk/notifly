@@ -1,12 +1,21 @@
 package dispatcher
 
-import "github.com/pixperk/notifly/common"
+import (
+	"fmt"
+
+	"github.com/pixperk/notifly/common"
+	"github.com/pixperk/notifly/notification"
+	"github.com/twilio/twilio-go"
+	openapi "github.com/twilio/twilio-go/rest/api/v2010"
+)
 
 type Dispatcher interface {
 	Send(event common.NotificationEvent) error
 }
 
-type EmailDispatcher struct{}
+type EmailDispatcher struct {
+	cfg notification.Config
+}
 
 func (d *EmailDispatcher) Send(event common.NotificationEvent) error {
 	// Implement email sending logic here
@@ -14,20 +23,38 @@ func (d *EmailDispatcher) Send(event common.NotificationEvent) error {
 	return nil
 }
 
-type SMSDispatcher struct{}
+type SMSDispatcher struct {
+	cfg notification.Config
+}
 
 func (d *SMSDispatcher) Send(event common.NotificationEvent) error {
-	// Implement SMS sending logic here
-	// For example, use an SMS gateway API to send the message
+	client := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username: d.cfg.TwilioAccountSID,
+		Password: d.cfg.TwilioAuthToken,
+	})
+
+	params := &openapi.CreateMessageParams{}
+	params.SetTo(event.Recipient)
+	params.SetFrom(d.cfg.TwilioPhoneNumber)
+	params.SetBody(fmt.Sprintf("%s\n%s", event.Subject, event.Body))
+
+	_, err := client.Api.CreateMessage(params)
+	if err != nil {
+		return fmt.Errorf("failed to send SMS: %w", err)
+	}
 	return nil
 }
 
-func GetDispatcher(event common.NotificationEvent) Dispatcher {
+func GetDispatcher(event common.NotificationEvent, cfg notification.Config) Dispatcher {
 	switch event.Type {
 	case "EMAIL":
-		return &EmailDispatcher{}
+		return &EmailDispatcher{
+			cfg,
+		}
 	case "SMS":
-		return &SMSDispatcher{}
+		return &SMSDispatcher{
+			cfg,
+		}
 	default:
 		return nil
 	}
