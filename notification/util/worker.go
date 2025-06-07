@@ -42,11 +42,30 @@ func processJob(job common.NotificationEvent, retryQueue chan<- common.Notificat
 	err := notifDispatcher.Send(job)
 	if err != nil {
 		log.Printf("Failed to send notification for job %v: %v", job.NotificationId, err)
-		//TODO: Check for max retries and handle accordingly
-		retryQueue <- job
+		job.RetryCount++
+		maxRetries := getMaxRetriesByType(job)
+		if job.RetryCount <= maxRetries {
+			log.Printf("Retrying job %v, attempt %d/%d", job.NotificationId, job.RetryCount, maxRetries)
+			retryQueue <- job
+		} else {
+			log.Printf("Max retries reached for job %v, giving up", job.NotificationId)
+			job.RetryCount = 0 // Reset retry count for next processing
+		}
+
 		return err
 	}
 
 	log.Printf("Successfully sent notification for job %v", job.NotificationId)
 	return nil
+}
+
+func getMaxRetriesByType(notificationEvent common.NotificationEvent) int {
+	switch notificationEvent.Type {
+	case "EMAIL":
+		return 3
+	case "SMS":
+		return 5
+	default:
+		return 3
+	}
 }
