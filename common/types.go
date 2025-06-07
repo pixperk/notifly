@@ -9,4 +9,5 @@ type NotificationEvent struct {
 	Subject        string    `json:"subject"`         // optional
 	Body           string    `json:"body"`            // the actual message
 	TriggerBy      string    `json:"triggered_by"`    // maybe userID or action
+	RetryCount     int       `json:"retry_count"`     // number of retries attempted
 }

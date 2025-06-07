@@ -46,6 +46,7 @@ func (s *grpcServer) TriggerNotification(ctx context.Context, req *commonpb.Noti
 		Subject:        req.Subject,
 		Body:           req.Body,
 		TriggerBy:      authPayload.Identifier,
+		RetryCount:     0,
 	}
 	err = s.service.TriggerNotification(event)
 	if err != nil {
