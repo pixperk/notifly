@@ -1,12 +1,9 @@
 package dispatcher
 
 import (
-	"fmt"
-
 	"github.com/pixperk/notifly/common"
 	"github.com/pixperk/notifly/notification"
-	"github.com/twilio/twilio-go"
-	openapi "github.com/twilio/twilio-go/rest/api/v2010"
+	util "github.com/pixperk/notifly/notification/util/notification"
 )
 
 type Dispatcher interface {
@@ -28,21 +25,8 @@ type SMSDispatcher struct {
 }
 
 func (d *SMSDispatcher) Send(event common.NotificationEvent) error {
-	client := twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: d.cfg.TwilioAccountSID,
-		Password: d.cfg.TwilioAuthToken,
-	})
+	return util.SendSMS(event, d.cfg)
 
-	params := &openapi.CreateMessageParams{}
-	params.SetTo(event.Recipient)
-	params.SetFrom(d.cfg.TwilioPhoneNumber)
-	params.SetBody(fmt.Sprintf("%s\n%s", event.Subject, event.Body))
-
-	_, err := client.Api.CreateMessage(params)
-	if err != nil {
-		return fmt.Errorf("failed to send SMS: %w", err)
-	}
-	return nil
 }
 
 func GetDispatcher(event common.NotificationEvent, cfg notification.Config) Dispatcher {
