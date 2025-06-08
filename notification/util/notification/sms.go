@@ -9,6 +9,8 @@ import (
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
+var ErrInvalidPhoneNumber = fmt.Errorf("invalid phone number format")
+
 func SendSMS(event common.NotificationEvent, cfg notification.Config) error {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
 		Username: cfg.TwilioAccountSID,
@@ -17,7 +19,7 @@ func SendSMS(event common.NotificationEvent, cfg notification.Config) error {
 
 	// Validate phone number
 	if !CheckIfPhoneNumberIsValid(event.Recipient) {
-		return fmt.Errorf("invalid phone number format: %s", event.Recipient)
+		return ErrInvalidPhoneNumber
 	}
 
 	params := &openapi.CreateMessageParams{}

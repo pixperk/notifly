@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/nats-io/nats.go"
 	"github.com/pixperk/notifly/common"
@@ -23,8 +24,7 @@ func ConnectNats(natsUrl, clientId string) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func PublishNotif(nc *nats.Conn, event common.NotificationEvent) error {
-
+func PublishNotif(js nats.JetStreamContext, event common.NotificationEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -32,11 +32,10 @@ func PublishNotif(nc *nats.Conn, event common.NotificationEvent) error {
 
 	subject := fmt.Sprintf("notifications.%s", event.Type)
 
-	msg := &nats.Msg{
-		Subject: subject,
-		Data:    data,
+	ack, err := js.Publish(subject, data)
+	if err != nil {
+		return err
 	}
-
-	return nc.PublishMsg(msg)
-
+	log.Printf("Published to JetStream: Stream=%s Seq=%d", ack.Stream, ack.Sequence)
+	return nil
 }
