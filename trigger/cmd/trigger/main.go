@@ -24,7 +24,12 @@ func main() {
 		log.Fatalf("Cannot create token maker: %v", err)
 	}
 
-	service := trigger.NewService(nc)
+	js, err := util.InitJetStream(nc)
+	if err != nil {
+		log.Fatalf("JetStream init failed: %v", err)
+	}
+
+	service := trigger.NewService(js)
 
 	log.Printf("Trigger service is starting on port %d", cfg.Port)
 

@@ -11,15 +11,15 @@ type Service interface {
 }
 
 type triggerService struct {
-	nc *nats.Conn
+	js nats.JetStreamContext
 }
 
-func NewService(nc *nats.Conn) Service {
+func NewService(js nats.JetStreamContext) Service {
 	return &triggerService{
-		nc: nc,
+		js,
 	}
 }
 
 func (s *triggerService) TriggerNotification(event common.NotificationEvent) error {
-	return util.PublishNotif(s.nc, event)
+	return util.PublishNotif(s.js, event)
 }
