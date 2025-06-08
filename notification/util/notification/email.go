@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/pixperk/notifly/common"
 	"github.com/pixperk/notifly/notification"
 )
+
+var ErrInvalidEmail = fmt.Errorf("invalid email format")
 
 type BrevoEmailRequest struct {
 	Sender struct {
@@ -29,6 +32,11 @@ func SendEmail(event common.NotificationEvent, cfg notification.Config) error {
 	reqBody := BrevoEmailRequest{}
 	reqBody.Sender.Name = "No-Reply"
 	reqBody.Sender.Email = cfg.FromAddress
+
+	// Validate recipient email
+	if !checkIfEmailValid(event.Recipient) {
+		return ErrInvalidEmail
+	}
 
 	reqBody.To = []struct {
 		Email string `json:"email"`
@@ -108,4 +116,11 @@ func checkIfHTML(body string) bool {
 	}
 
 	return false
+}
+
+func checkIfEmailValid(email string) bool {
+	// Basic email validation regex
+	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	re := regexp.MustCompile(emailRegex)
+	return re.MatchString(email)
 }

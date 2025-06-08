@@ -124,8 +124,8 @@ func processPullConsumer(js nats.JetStreamContext, stream, consumer string, cfg 
 
 			err = processJob(event, cfg)
 			if err != nil {
-				if err == util.ErrInvalidPhoneNumber {
-					log.Printf("Invalid phone number for job %v - terminating message", event.NotificationId)
+				if err == util.ErrInvalidPhoneNumber || err == util.ErrInvalidEmail {
+					log.Printf("Invalid recepient for job %v - terminating message", event.NotificationId)
 					_ = msg.Term()
 				} else if deliveryCount >= 5 {
 					log.Printf("Max delivery attempts reached for job %v - terminating message", event.NotificationId)
