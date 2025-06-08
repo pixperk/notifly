@@ -15,14 +15,15 @@ Notifly is composed of the following microservices:
 ### Trigger Service
 - Receives notification requests
 - Validates authentication tokens
-- Publishes notification events to NATS message queue
+- Publishes notification events to NATS JetStream streams
 - Implements authentication middleware for secure communication
 
 ### Notification Service
-- Consumes notification events from NATS
+- Consumes notification events from NATS JetStream
+- Implements durable, persistent subscriptions with explicit acknowledgements
 - Dispatches notifications via appropriate channels (Email/SMS)
-- Implements retry mechanism with configurable policies
-- Uses worker pool pattern for concurrency
+- Configurable retry policies based on notification type
+- Intelligent error handling for different failure scenarios
 
 ### GraphQL API Gateway
 - Provides a unified GraphQL API for client applications
@@ -34,7 +35,7 @@ Notifly is composed of the following microservices:
 
 - **Language**: Go
 - **API Protocols**: gRPC, GraphQL
-- **Message Queue**: NATS with JetStream
+- **Message Queue**: NATS with JetStream for persistent message storage
 - **Database**: PostgreSQL
 - **Authentication**: PASETO tokens
 - **Notification Providers**:
@@ -44,17 +45,20 @@ Notifly is composed of the following microservices:
 
 ## System Components
 
-### Message Broker (NATS)
-NATS serves as the central message broker, enabling loose coupling between services:
-- Notification events are published by the Trigger service
-- Events are consumed by Notification service workers
-- Implements reliable delivery with retry mechanisms
+### Message Broker (NATS with JetStream)
+NATS with JetStream serves as the central message broker, enabling loose coupling between services with persistent message storage:
+- Notification events are published by the Trigger service to JetStream streams
+- Events are consumed by Notification service using durable consumers
+- Built-in persistent storage ensures message delivery even during service outages
+- Automatic message replay and at-least-once delivery semantics
+- Configurable retry policies with maximum delivery attempts
 
-### Worker Pool
-The notification service uses a worker pool pattern for efficient resource usage:
-- Concurrent processing of notification requests
-- Configurable worker count for scalability
-- Backoff strategy for failed delivery attempts
+### Message Processing
+The notification service processes messages directly from JetStream:
+- Explicit acknowledgement (Ack/Nak) for reliable message handling
+- Configurable acknowledgement wait time and redelivery logic
+- Automatic message filtering based on notification type
+- Intelligent error handling with differentiated responses for transient vs. permanent failures
 
 ### Authentication
 Token-based authentication using PASETO:
@@ -142,13 +146,15 @@ The GraphQL API provides the following operations:
 
 ### Event-Driven Architecture
 - Services communicate asynchronously through events
-- NATS provides reliable message delivery
+- NATS JetStream provides persistent, reliable message delivery
+- Supports at-least-once delivery semantics with message replay
 - Enables service decoupling and independent scaling
 
 ### Circuit Breaker Pattern
 - Gracefully handles service failures
-- Implements configurable retry strategies
-- Prevents cascading failures
+- Implements configurable retry strategies through JetStream's delivery policies
+- Prevents cascading failures with explicit message acknowledgement
+- Differentiates between transient and permanent failures
 
 ### Repository Pattern
 - Clean separation of data access layer
