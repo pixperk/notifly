@@ -25,14 +25,3 @@ func processJob(job common.NotificationEvent, cfg notification.Config) error {
 	log.Printf("Successfully sent notification for job %v", job.NotificationId)
 	return nil
 }
-
-func getMaxRetriesByType(notificationEvent common.NotificationEvent) int {
-	switch notificationEvent.Type {
-	case "EMAIL":
-		return 3
-	case "SMS":
-		return 5
-	default:
-		return 3
-	}
-}
