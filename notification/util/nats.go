@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/pixperk/notifly/common"
+	"github.com/pixperk/notifly/notification"
+	util "github.com/pixperk/notifly/notification/util/notification"
 )
 
 func ConnectNats(natsUrl, clientId string) (*nats.Conn, error) {
@@ -24,19 +27,47 @@ func ConnectNats(natsUrl, clientId string) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func SubscribeToNotifications(nc *nats.Conn, queue chan<- common.NotificationEvent) error {
+func SubscribeToNotifications(nc *nats.Conn, cfg notification.Config) error {
 	subj := "notifications.*"
+	var maxRetries int
+	js, err := nc.JetStream()
+	if err != nil {
+		return fmt.Errorf("failed to get JetStream context: %w", err)
+	}
 
-	_, err := nc.QueueSubscribe(subj, "notif-workers", func(msg *nats.Msg) {
-		var event common.NotificationEvent
-		if err := json.Unmarshal(msg.Data, &event); err != nil {
-			log.Printf("Invalid message: %v", err)
-			return
-		}
+	_, err = js.QueueSubscribe(subj, "notif-workers",
+		func(msg *nats.Msg) {
+			var event common.NotificationEvent
+			if err := json.Unmarshal(msg.Data, &event); err != nil {
+				log.Printf("Error unmarshalling message: %v", err)
+				msg.Ack() //Ack to discard bad message
+				return
+			}
 
-		job := event
-		queue <- job
-	})
+			maxRetries = getMaxRetriesByType(event)
+
+			err := processJob(event, cfg)
+			if err != nil {
+				if err == util.ErrInvalidPhoneNumber {
+					log.Printf("Invalid phone number for job %v: %v", event.NotificationId, err)
+					msg.Ack() // Ack to discard bad message
+					return
+				}
+				log.Printf("Error processing job %v: %v", event.NotificationId, err)
+				msg.Nak() // Nack to retry the message
+				return
+			} else {
+				log.Printf("Successfully processed job %v", event.NotificationId)
+				msg.Ack() // Acknowledge successful processing
+			}
+
+		},
+		nats.Durable("notif-consumer"),
+		nats.AckExplicit(),
+		nats.MaxDeliver(maxRetries),
+		nats.AckWait(30*time.Second),
+		nats.ManualAck())
 
 	return err
+
 }

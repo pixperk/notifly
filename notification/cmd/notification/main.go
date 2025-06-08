@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/pixperk/notifly/common"
 	"github.com/pixperk/notifly/notification"
 	"github.com/pixperk/notifly/notification/util"
 )
@@ -23,18 +22,12 @@ func main() {
 		log.Fatalf("Cannot connect to NATS: %v", err)
 	}
 
-	queue := make(chan common.NotificationEvent, 100)
-
-	retryQueue := make(chan common.NotificationEvent, 100)
-	go util.StartRetryWorker(retryQueue, queue)
-
-	err = util.SubscribeToNotifications(nc, queue)
+	err = util.SubscribeToNotifications(nc, cfg)
 	if err != nil {
 		log.Fatalf("NATS subscription failed: %v", err)
 	}
 
 	log.Printf("Started...")
-	util.StartWorkerPool(queue, retryQueue, 5, cfg)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
