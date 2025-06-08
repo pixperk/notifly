@@ -53,6 +53,21 @@ NATS with JetStream serves as the central message broker, enabling loose couplin
 - Automatic message replay and at-least-once delivery semantics
 - Configurable retry policies with maximum delivery attempts
 
+### Pull-Based Queue Implementation
+The notification service implements a pull-based consumer pattern with JetStream:
+- Uses explicit pull subscriptions rather than push-based delivery
+- Consumer maintains state across restarts with durable name ("notif-consumer")
+- Configurable batch processing with fetch size and wait time parameters
+- DeliverAllPolicy ensures all messages in the stream are processed
+- Messages are only removed from the queue after explicit acknowledgement
+- Supports sophisticated error handling with different acknowledgement strategies:
+  - Ack: For successfully processed messages
+  - Nak: For temporary failures that should be retried
+  - Term: For permanent failures that should not be retried
+- Supports message inspection with metadata access for tracking delivery attempts
+- Implements backoff strategy with configurable AckWait time
+- Service restart automatically continues processing from last acknowledged message
+
 ### Message Processing
 The notification service processes messages directly from JetStream:
 - Explicit acknowledgement (Ack/Nak) for reliable message handling
